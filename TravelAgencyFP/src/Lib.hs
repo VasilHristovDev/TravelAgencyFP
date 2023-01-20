@@ -90,10 +90,12 @@ getTripFromCustomer (Customer name (x@(Trip destination _ _ _ _):trips) points) 
     else getTripFromCustomer (Customer name trips points) destinationName
 
 calculateRefund :: Agency -> Customer -> Trip -> Refund
+calculateRefund _ _ (Trip _ _ Finished _ _) = Datatypes.Nothing
+calculateRefund _ _ (Trip _ _ Canceled _ _) = Datatypes.Nothing
 calculateRefund (Agency customers) y@(Customer _ trips _) x@(Trip _ price _ _ policy) = 
     Datatypes.Just refund
-    where refund =  max (( k * c ) * ( price - fee )) 0.0
-          k = fromIntegral $ countNotCanceled `div` countAll
+    where refund =  max (k * c * (price - fee))  0
+          k =  fromIntegral countNotCanceled / fromIntegral countAll
           c = getC policy
           fee = fromIntegral quotient * canceledAvg
           quotient = countCanceledTrip `div` countAllInTrip
