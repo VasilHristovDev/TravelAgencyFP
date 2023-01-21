@@ -68,9 +68,9 @@ getRefund :: Agency -> Name -> Destination -> Refund
 getRefund _ "" _ = Datatypes.Nothing
 getRefund _ _ "" = Datatypes.Nothing
 getRefund (Agency []) _ _ = Datatypes.Nothing
-getRefund agency customerName destinationName = 
-    calculateRefund agency customer trip 
-    where customer = getCustomerByName agency customerName
+getRefund agency1 customerName destinationName = 
+    calculateRefund agency1 customer trip 
+    where customer = getCustomerByName agency1 customerName
           trip = getTripFromCustomer customer destinationName
 
 getCustomerByName :: Agency -> Name -> Customer
@@ -90,10 +90,12 @@ getTripFromCustomer (Customer name (x@(Trip destination _ _ _ _):trips) points) 
     else getTripFromCustomer (Customer name trips points) destinationName
 
 calculateRefund :: Agency -> Customer -> Trip -> Refund
-calculateRefund _ _ (Trip _ _ Finished _ _) = Datatypes.Nothing
-calculateRefund _ _ (Trip _ _ Canceled _ _) = Datatypes.Nothing
+calculateRefund _ _ (Trip _ _ Finished _ _) = error "Cannot cancel trip. Trip has finished!"
+calculateRefund _ _ (Trip _ _ Canceled _ _) = error "Cannot cancel trip. Trip was already canceled!"
 calculateRefund (Agency customers) y@(Customer _ trips _) x@(Trip _ price _ _ policy) = 
-    Datatypes.Just refund
+    if refund == 0.0
+    then Datatypes.Nothing
+    else Datatypes.Just refund
     where refund =  max (k * c * (price - fee))  0
           k =  fromIntegral countNotCanceled / fromIntegral countAll
           c = getC policy
